@@ -1,45 +1,69 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Форма отзывов</title>
+  <meta charset="UTF-8">
+  <title>Оцените наш сервис</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+    .stars { display: flex; gap: 10px; font-size: 24px; cursor: pointer; }
+    .stars span { padding: 5px; }
+    .selected { color: gold; }
+    #feedbackForm { display: none; margin-top: 20px; }
+  </style>
 </head>
 <body>
 
-<h2>Оцените сервис</h2>
+  <h2>Как вам наш сервис?</h2>
+  <div class="stars" id="starContainer">
+    <span data-value="1">★</span>
+    <span data-value="2">★</span>
+    <span data-value="3">★</span>
+    <span data-value="4">★</span>
+    <span data-value="5">★</span>
+  </div>
 
-<div class="stars" id="starContainer">
-  <span data-value="1" style="font-size:30px;cursor:pointer;">★</span>
-  <span data-value="2" style="font-size:30px;cursor:pointer;">★</span>
-  <span data-value="3" style="font-size:30px;cursor:pointer;">★</span>
-  <span data-value="4" style="font-size:30px;cursor:pointer;">★</span>
-  <span data-value="5" style="font-size:30px;cursor:pointer;">★</span>
-</div>
+  <div id="feedbackForm">
+    <p>Что можно улучшить?</p>
+    <textarea id="feedback" rows="4" cols="50" placeholder="Напишите свой отзыв..."></textarea><br>
+    <button onclick="submitFeedback()">Отправить</button>
+  </div>
 
-<div id="feedbackForm" style="display:none; margin-top:20px;">
-  <form action="https://formsubmit.co/nevaautocom@gmail.com" method="POST">
-    <textarea name="Отзыв" rows="4" placeholder="Напишите ваш отзыв" required></textarea><br/>
-    <input type="hidden" name="_captcha" value="false" />
-    <button type="submit">Отправить</button>
-  </form>
-</div>
+  <script>
+    const stars = document.querySelectorAll('.stars span');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const yandexLink = "https://yandex.ru/maps/org/ВАША_ССЫЛКА"; // ← вставь сюда свою ссылку
 
-<script>
-  const stars = document.querySelectorAll('#starContainer span');
-  const feedbackForm = document.getElementById('feedbackForm');
-  const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16";
+    let selectedRating = 0;
 
-  stars.forEach(star => {
-    star.addEventListener('click', () => {
-      const rating = parseInt(star.dataset.value);
-      if (rating === 5) {
-        window.location.href = yandexLink;
-      } else {
-        feedbackForm.style.display = 'block';
-      }
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = parseInt(star.dataset.value);
+        highlightStars(selectedRating);
+
+        if (selectedRating === 5) {
+          window.location.href = yandexLink;
+        } else {
+          feedbackForm.style.display = 'block';
+        }
+      });
     });
-  });
-</script>
+
+    function highlightStars(rating) {
+      stars.forEach(star => {
+        star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
+      });
+    }
+
+    function submitFeedback() {
+      const text = document.getElementById('feedback').value;
+      if (!text.trim()) {
+        alert("Пожалуйста, напишите, что можно улучшить.");
+        return;
+      }
+      alert("Спасибо за отзыв!");
+      feedbackForm.style.display = 'none';
+    }
+  </script>
 
 </body>
 </html>
