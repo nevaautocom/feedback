@@ -13,7 +13,7 @@
 </head>
 <body>
 
-  <h2>Как Вам наш сервис?</h2>
+  <h2>Как вам наш сервис?</h2>
   <div class="stars" id="starContainer">
     <span data-value="1">★</span>
     <span data-value="2">★</span>
@@ -22,23 +22,21 @@
     <span data-value="5">★</span>
   </div>
 
-  <!-- Форма отзыва (появляется при < 5 звёзд) -->
   <div id="feedbackForm">
     <p>Что можно улучшить?</p>
-    <form action="https://formsubmit.co/nevaautocom@gmail.com" method="POST">
-      <textarea name="Отзыв" rows="4" cols="50" placeholder="Напишите свой отзыв..." required></textarea><br>
-      <input type="hidden" name="_subject" value="Негативный отзыв с сайта">
-      <input type="hidden" name="_captcha" value="false">
-      <button type="submit">Отправить</button>
-    </form>
+    <textarea id="feedback" rows="4" cols="50" placeholder="Напишите свой отзыв..." required></textarea><br>
+    <button onclick="submitFeedback()">Отправить</button>
   </div>
 
   <script>
     const stars = document.querySelectorAll('.stars span');
     const feedbackForm = document.getElementById('feedbackForm');
-    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16"; // ← вставь сюда свою ссылку
+    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16"; // ← вставь свою ссылку
 
     let selectedRating = 0;
+
+    const BOT_TOKEN = '7293636647:AAF2gUna3cxy1gyPslr-zDZSnlKzTE2WLy0';
+    const CHAT_ID = 7142031846;
 
     stars.forEach(star => {
       star.addEventListener('click', () => {
@@ -57,6 +55,31 @@
       stars.forEach(star => {
         star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
       });
+    }
+
+    function submitFeedback() {
+      const text = document.getElementById('feedback').value.trim();
+      if (!text) {
+        alert("Пожалуйста, напишите отзыв.");
+        return;
+      }
+
+      const message = ⭐ Оценка: ${selectedRating}\n💬 Отзыв: ${text};
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message
+        })
+      })
+      .then(res => res.ok ? alert("Спасибо за отзыв!") : alert("Ошибка отправки 😞"))
+      .catch(err => alert("Сетевая ошибка: " + err));
+
+      feedbackForm.style.display = 'none';
+      document.getElementById('feedback').value = '';
     }
   </script>
 
