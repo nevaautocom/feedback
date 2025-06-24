@@ -31,7 +31,7 @@
   <script>
     const stars = document.querySelectorAll('.stars span');
     const feedbackForm = document.getElementById('feedbackForm');
-    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16"; // ← вставь свою ссылку
+    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16";
 
     let selectedRating = 0;
 
@@ -65,6 +65,7 @@
       }
 
       const message = ⭐ Оценка: ${selectedRating}\n💬 Отзыв: ${text};
+
       fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
         method: "POST",
         headers: {
@@ -75,11 +76,18 @@
           text: message
         })
       })
-      .then(res => res.ok ? alert("Спасибо за отзыв!") : alert("Ошибка отправки 😞"))
-      .catch(err => alert("Сетевая ошибка: " + err));
-
-      feedbackForm.style.display = 'none';
-      document.getElementById('feedback').value = '';
+      .then(res => {
+        if (res.ok) {
+          alert("Спасибо за отзыв!");
+          feedbackForm.style.display = 'none';
+          document.getElementById('feedback').value = '';
+        } else {
+          alert("Ошибка при отправке отзыва.");
+        }
+      })
+      .catch(err => {
+        alert("Сетевая ошибка: " + err.message);
+      });
     }
   </script>
 
