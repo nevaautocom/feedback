@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Оцените наш сервис</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
+    .stars { display: flex; gap: 10px; font-size: 24px; cursor: pointer; }
+    .stars span { padding: 5px; }
+    .selected { color: gold; }
+    #feedbackForm { display: none; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h2>Как вам наш сервис?</h2>
+  <div class="stars" id="starContainer">
+    <span data-value="1">★</span>
+    <span data-value="2">★</span>
+    <span data-value="3">★</span>
+    <span data-value="4">★</span>
+    <span data-value="5">★</span>
+  </div>
+
+  <!-- Форма отправки отзыва -->
+  <div id="feedbackForm">
+    <p>Что можно улучшить?</p>
+    <form action="https://formsubmit.co/nevaautocom@gmail.com" method="POST">
+      <textarea name="Отзыв" rows="4" cols="50" placeholder="Напишите свой отзыв..." required></textarea><br>
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_subject" value="Новый отзыв с формы!">
+      <input type="hidden" name="_template" value="table">
+      <button type="submit">Отправить</button>
+    </form>
+  </div>
+
+  <script>
+    const stars = document.querySelectorAll('.stars span');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16"; // ← вставь сюда ссылку на Яндекс.Карты
+
+    let selectedRating = 0;
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = parseInt(star.dataset.value);
+        highlightStars(selectedRating);
+
+        if (selectedRating === 5) {
+          window.location.href = yandexLink;
+        } else {
+          feedbackForm.style.display = 'block';
+        }
+      });
+    });
+
+    function highlightStars(rating) {
+      stars.forEach(star => {
+        star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
+      });
+    }
+  </script>
+
+</body>
+</html>
