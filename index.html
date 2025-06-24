@@ -22,16 +22,21 @@
     <span data-value="5">★</span>
   </div>
 
+  <!-- Форма отзыва (появляется при < 5 звёзд) -->
   <div id="feedbackForm">
     <p>Что можно улучшить?</p>
-    <textarea id="feedback" rows="4" cols="50" placeholder="Напишите свой отзыв..."></textarea><br>
-    <button onclick="submitFeedback()">Отправить</button>
+    <form action="https://formsubmit.co/nevaautocom@gmail.com" method="POST">
+      <textarea name="Отзыв" rows="4" cols="50" placeholder="Напишите свой отзыв..." required></textarea><br>
+      <input type="hidden" name="_subject" value="Негативный отзыв с сайта">
+      <input type="hidden" name="_captcha" value="false">
+      <button type="submit">Отправить</button>
+    </form>
   </div>
 
   <script>
     const stars = document.querySelectorAll('.stars span');
     const feedbackForm = document.getElementById('feedbackForm');
-    const yandexLink = "https://yandex.ru/maps/org/ВАША_ССЫЛКА"; // ← вставь сюда свою ссылку
+    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16"; // ← вставь сюда свою ссылку
 
     let selectedRating = 0;
 
@@ -52,16 +57,6 @@
       stars.forEach(star => {
         star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
       });
-    }
-
-    function submitFeedback() {
-      const text = document.getElementById('feedback').value;
-      if (!text.trim()) {
-        alert("Пожалуйста, напишите, что можно улучшить.");
-        return;
-      }
-      alert("Спасибо за отзыв!");
-      feedbackForm.style.display = 'none';
     }
   </script>
 
