@@ -1,95 +1,212 @@
+html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Оцените наш сервис</title>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: 40px auto; }
-    .stars { display: flex; gap: 10px; font-size: 24px; cursor: pointer; }
-    .stars span { padding: 5px; }
-    .selected { color: gold; }
-    #feedbackForm { display: none; margin-top: 20px; }
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h2 {
+      font-size: 32px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    /* Контейнер звёзд — увеличенные отступы и размер */
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      cursor: pointer;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    /* Каждая звезда — крупная и удобная для касания */
+    .stars span {
+      font-size: 58px;
+      padding: 12px 8px;
+      transition: transform 0.1s ease;
+      line-height: 1;
+      user-select: none;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    /* Лёгкое увеличение при нажатии (на мобильных приятно) */
+    .stars span:active {
+      transform: scale(1.1);
+    }
+
+    .selected {
+      color: gold;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    /* Блок с формой отзыва */
+    #feedbackForm {
+      display: none;
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    #feedbackForm p {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    /* Крупное текстовое поле */
+    textarea {
+      width: 100%;
+      font-size: 20px;
+      padding: 15px;
+      border-radius: 16px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-family: inherit;
+      margin-bottom: 20px;
+      resize: vertical;
+    }
+
+    /* Большая кнопка */
+    button {
+      background: #0077ff;
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:active {
+      background: #005fcc;
+      transform: scale(0.98);
+    }
+
+    /* Доп. адаптив для узких экранов */
+    @media (max-width: 550px) {
+      .stars span {
+        font-size: 48px;
+        min-width: 55px;
+        padding: 8px 4px;
+      }
+      .stars {
+        gap: 10px;
+      }
+      h2 {
+        font-size: 28px;
+      }
+      textarea {
+        font-size: 18px;
+      }
+      button {
+        font-size: 20px;
+        padding: 14px 20px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <h2>Как вам наш сервис?</h2>
-  <div class="stars" id="starContainer">
-    <span data-value="1">★</span>
-    <span data-value="2">★</span>
-    <span data-value="3">★</span>
-    <span data-value="4">★</span>
-    <span data-value="5">★</span>
-  </div>
+<h2>✨ Как вам наш сервис? ✨</h2>
+<div class="stars" id="starContainer">
+  <span data-value="1">★</span>
+  <span data-value="2">★</span>
+  <span data-value="3">★</span>
+  <span data-value="4">★</span>
+  <span data-value="5">★</span>
+</div>
 
-  <div id="feedbackForm">
-    <p>Что можно улучшить?</p>
-    <textarea id="feedback" rows="4" cols="50" placeholder="Напишите свой отзыв..." required></textarea><br>
-    <button onclick="submitFeedback()">Отправить</button>
-  </div>
+<div id="feedbackForm">
+  <p>📝 Что можно улучшить?</p>
+  <textarea id="feedback" rows="5" placeholder="Напишите свой отзыв... (обязательно)" required></textarea>
+  <button onclick="submitFeedback()">📬 Отправить отзыв</button>
+</div>
 
-  <script>
-    const stars = document.querySelectorAll('.stars span');
-    const feedbackForm = document.getElementById('feedbackForm');
-    const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16";
+<script>
+  const stars = document.querySelectorAll('.stars span');
+  const feedbackForm = document.getElementById('feedbackForm');
+  const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16";
 
-    let selectedRating = 0;
+  let selectedRating = 0;
 
-    const BOT_TOKEN = '7293636647:AAF2gUna3cxy1gyPslr-zDZSnlKzTE2WLy0';
-    const CHAT_ID = 7142031846;
+  const BOT_TOKEN = '7293636647:AAF2gUna3cxy1gyPslr-zDZSnlKzTE2WLy0';
+  const CHAT_ID = 7142031846;
 
-    stars.forEach(star => {
-      star.addEventListener('click', () => {
-        selectedRating = parseInt(star.dataset.value);
-        highlightStars(selectedRating);
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.dataset.value);
+      highlightStars(selectedRating);
 
-        if (selectedRating === 5) {
-          window.location.href = yandexLink;
-        } else {
-          feedbackForm.style.display = 'block';
-        }
-      });
-    });
-
-    function highlightStars(rating) {
-      stars.forEach(star => {
-        star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
-      });
-    }
-
-    function submitFeedback() {
-      const text = document.getElementById('feedback').value.trim();
-      if (!text) {
-        alert("Пожалуйста, напишите отзыв.");
-        return;
+      if (selectedRating === 5) {
+        // Для пятёрки — переход на Яндекс
+        window.location.href = yandexLink;
+      } else {
+        feedbackForm.style.display = 'block';
+        // Прокрутка к форме для удобства
+        feedbackForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    });
+  });
 
-      const message = `⭐ Оценка: ${selectedRating}\n💬 Отзыв: ${text}`;
+  function highlightStars(rating) {
+    stars.forEach(star => {
+      star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
+    });
+  }
 
-      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          chat_id: CHAT_ID,
-          text: message
-        })
-      })
-      .then(res => {
-        if (res.ok) {
-          alert("Спасибо за отзыв!");
-          feedbackForm.style.display = 'none';
-          document.getElementById('feedback').value = '';
-        } else {
-          alert("Ошибка при отправке отзыва.");
-        }
-      })
-      .catch(err => {
-        alert("Сетевая ошибка: " + err.message);
-      });
+  function submitFeedback() {
+    const text = document.getElementById('feedback').value.trim();
+    if (!text) {
+      alert("✏️ Пожалуйста, напишите отзыв.");
+      return;
     }
-  </script>
+
+    const message = `⭐ Оценка: ${selectedRating}\n💬 Отзыв: ${text}`;
+
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: message
+      })
+    })
+    .then(res => {
+      if (res.ok) {
+        alert("❤️ Спасибо за отзыв!");
+        feedbackForm.style.display = 'none';
+        document.getElementById('feedback').value = '';
+        // Сброс подсветки звёзд (опционально)
+        stars.forEach(star => star.classList.remove('selected'));
+        selectedRating = 0;
+      } else {
+        alert("❌ Ошибка при отправке отзыва.");
+      }
+    })
+    .catch(err => {
+      alert("🌐 Сетевая ошибка: " + err.message);
+    });
+  }
+</script>
 
 </body>
 </html>
