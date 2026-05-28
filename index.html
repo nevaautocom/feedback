@@ -19,7 +19,6 @@
       text-align: center;
     }
 
-    /* Контейнер звёзд — увеличенные отступы и размер */
     .stars {
       display: flex;
       justify-content: center;
@@ -29,7 +28,6 @@
       flex-wrap: wrap;
     }
 
-    /* Каждая звезда — крупная и удобная для касания */
     .stars span {
       font-size: 58px;
       padding: 12px 8px;
@@ -40,7 +38,6 @@
       text-align: center;
     }
 
-    /* Лёгкое увеличение при нажатии (на мобильных приятно) */
     .stars span:active {
       transform: scale(1.1);
     }
@@ -50,7 +47,6 @@
       text-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
 
-    /* Блок с формой отзыва */
     #feedbackForm {
       display: none;
       margin-top: 30px;
@@ -66,7 +62,6 @@
       margin-bottom: 15px;
     }
 
-    /* Крупное текстовое поле */
     textarea {
       width: 100%;
       font-size: 20px;
@@ -79,7 +74,6 @@
       resize: vertical;
     }
 
-    /* Большая кнопка */
     button {
       background: #0077ff;
       color: white;
@@ -98,7 +92,6 @@
       transform: scale(0.98);
     }
 
-    /* Доп. адаптив для узких экранов */
     @media (max-width: 550px) {
       .stars span {
         font-size: 48px;
@@ -134,7 +127,7 @@
 
 <div id="feedbackForm">
   <p>📝 Что можно улучшить?</p>
-  <textarea id="feedback" rows="5" placeholder="Напишите свой отзыв... (Не забудьте указать в отзыве Ваш гос. номер для получения подарка.)" required></textarea>
+  <textarea id="feedback" rows="5" placeholder="Напишите свой отзыв... (не забудьте указать гос. номер автомобиля для получения подарка)" required></textarea>
   <button onclick="submitFeedback()">📬 Отправить отзыв</button>
 </div>
 
@@ -154,11 +147,9 @@
       highlightStars(selectedRating);
 
       if (selectedRating === 5) {
-        // Для пятёрки — переход на Яндекс
         window.location.href = yandexLink;
       } else {
         feedbackForm.style.display = 'block';
-        // Прокрутка к форме для удобства
         feedbackForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     });
@@ -170,7 +161,7 @@
     });
   }
 
-  function submitFeedback() {
+  async function submitFeedback() {
     const text = document.getElementById('feedback').value.trim();
     if (!text) {
       alert("✏️ Пожалуйста, напишите отзыв.");
@@ -178,32 +169,49 @@
     }
 
     const message = `⭐ Оценка: ${selectedRating}\n💬 Отзыв: ${text}`;
+    
+    // Показываем индикатор загрузки на кнопке
+    const btn = document.querySelector('button');
+    const originalText = btn.innerText;
+    btn.innerText = '⏳ Отправка...';
+    btn.disabled = true;
 
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: message
-      })
-    })
-    .then(res => {
-      if (res.ok) {
+    try {
+      // ИСПРАВЛЕНИЕ: используем правильный CORS-прокси
+      const proxyUrl = 'https://corsproxy.io/';
+      const targetUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+      
+      const response = await fetch(proxyUrl + '?' + new URLSearchParams({
+        url: targetUrl
+      }), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message
+        })
+      });
+
+      if (response.ok) {
         alert("❤️ Спасибо за отзыв!");
         feedbackForm.style.display = 'none';
         document.getElementById('feedback').value = '';
-        // Сброс подсветки звёзд (опционально)
         stars.forEach(star => star.classList.remove('selected'));
         selectedRating = 0;
       } else {
-        alert("❌ Ошибка при отправке отзыва.");
+        const errorText = await response.text();
+        console.error('Telegram API error:', errorText);
+        throw new Error(`HTTP ${response.status}`);
       }
-    })
-    .catch(err => {
-      alert("🌐 Сетевая ошибка: " + err.message);
-    });
+    } catch (error) {
+      console.error('Fetch error:', error);
+      alert("❌ Ошибка отправки. Пожалуйста, попробуйте позже.\n" + error.message);
+    } finally {
+      btn.innerText = originalText;
+      btn.disabled = false;
+    }
   }
 </script>
 
