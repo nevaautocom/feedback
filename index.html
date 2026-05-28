@@ -36,6 +36,7 @@
       user-select: none;
       min-width: 70px;
       text-align: center;
+      cursor: pointer;
     }
 
     .stars span:active {
@@ -74,17 +75,6 @@
       resize: vertical;
     }
 
-    input {
-      width: 100%;
-      font-size: 20px;
-      padding: 15px;
-      border-radius: 16px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
-      font-family: inherit;
-      margin-bottom: 20px;
-    }
-
     button {
       background: #0077ff;
       color: white;
@@ -106,15 +96,6 @@
     button:disabled {
       background: #ccc;
       cursor: not-allowed;
-      opacity: 0.7;
-    }
-
-    .loading {
-      display: none;
-      text-align: center;
-      margin-top: 20px;
-      font-size: 18px;
-      color: #666;
     }
 
     @media (max-width: 550px) {
@@ -129,7 +110,7 @@
       h2 {
         font-size: 28px;
       }
-      textarea, input {
+      textarea {
         font-size: 18px;
       }
       button {
@@ -152,27 +133,19 @@
 
 <div id="feedbackForm">
   <p>📝 Что можно улучшить?</p>
-  
-  <input type="email" id="userEmail" placeholder="Ваш email (необязательно)">
-  
   <textarea id="feedback" rows="5" placeholder="Напишите свой отзыв..." required></textarea>
   <button onclick="submitFeedback()">📬 Отправить отзыв</button>
-</div>
-
-<div class="loading" id="loadingIndicator">
-  ⏳ Отправка в Google Таблицу...
 </div>
 
 <script>
   const stars = document.querySelectorAll('.stars span');
   const feedbackForm = document.getElementById('feedbackForm');
-  const loadingIndicator = document.getElementById('loadingIndicator');
   const yandexLink = "https://yandex.ru/maps/org/folksvagen_neva_avtokom/3046919187/reviews/?add-review=true&ll=30.321069%2C59.882415&z=16";
 
   let selectedRating = 0;
 
-  // 👇 СЮДА ВСТАВЬТЕ ВАШ URL ОТ Google Apps Script
-  const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxFv9SbqprPtfmmuaK389GbA0gzMvNacf-IncYTu56YexpcZt_axuH1thZFZNBWg1_M4w/exec";
+  // 👇 ВСТАВЬТЕ ВАШ URL ОТ APPS SCRIPT
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFv9SbqprPtfmmuaK389GbA0gzMvNacf-IncYTu56YexpcZt_axuH1thZFZNBWg1_M4w/exec";
 
   stars.forEach(star => {
     star.addEventListener('click', () => {
@@ -196,7 +169,6 @@
 
   async function submitFeedback() {
     const feedbackText = document.getElementById('feedback').value.trim();
-    const userEmail = document.getElementById('userEmail').value.trim();
     
     if (!feedbackText) {
       alert("✏️ Пожалуйста, напишите отзыв.");
@@ -205,46 +177,34 @@
 
     const btn = document.querySelector('button');
     const originalText = btn.innerText;
-    
-    // Показываем индикатор загрузки
     btn.disabled = true;
     btn.innerText = '⏳ Отправка...';
-    loadingIndicator.style.display = 'block';
 
     try {
-      // Отправляем данные в Google Таблицу
-      const response = await fetch(GOOGLE_SHEETS_URL, {
+      await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors', // Важно для Google Apps Script
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           rating: selectedRating,
-          feedback: feedbackText,
-          email: userEmail || 'не указан',
-          userAgent: navigator.userAgent
+          feedback: feedbackText
         })
       });
-
-      // При mode: 'no-cors' мы не можем прочитать ответ,
-      // но запрос всё равно отправляется
-      setTimeout(() => {
-        alert("✅ Спасибо за отзыв! Данные сохранены в Google Таблицу.");
-        feedbackForm.style.display = 'none';
-        document.getElementById('feedback').value = '';
-        document.getElementById('userEmail').value = '';
-        stars.forEach(star => star.classList.remove('selected'));
-        selectedRating = 0;
-      }, 500);
-
+      
+      alert("✅ Спасибо за отзыв!");
+      feedbackForm.style.display = 'none';
+      document.getElementById('feedback').value = '';
+      stars.forEach(star => star.classList.remove('selected'));
+      selectedRating = 0;
+      
     } catch (error) {
       console.error('Ошибка:', error);
-      alert("❌ Ошибка при сохранении в Google Таблицу. Пожалуйста, попробуйте позже.\n\n" + error.message);
+      alert("❌ Ошибка при отправке. Пожалуйста, попробуйте позже.");
     } finally {
       btn.disabled = false;
       btn.innerText = originalText;
-      loadingIndicator.style.display = 'none';
     }
   }
 </script>
