@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Оцените наш сервис</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h2 {
+      font-size: 32px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      cursor: pointer;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stars span {
+      font-size: 58px;
+      padding: 12px 8px;
+      transition: transform 0.1s ease;
+      line-height: 1;
+      user-select: none;
+      min-width: 70px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .stars span:active {
+      transform: scale(1.1);
+    }
+
+    .selected {
+      color: gold;
+      text-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    #feedbackForm {
+      display: none;
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    #feedbackForm p {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    textarea {
+      width: 100%;
+      font-size: 20px;
+      padding: 15px;
+      border-radius: 16px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-family: inherit;
+      margin-bottom: 20px;
+      resize: vertical;
+    }
+
+    button {
+      background: #0077ff;
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 50px;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:active {
+      background: #005fcc;
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 550px) {
+      .stars span {
+        font-size: 48px;
+        min-width: 55px;
+        padding: 8px 4px;
+      }
+      .stars {
+        gap: 10px;
+      }
+      h2 {
+        font-size: 28px;
+      }
+      textarea {
+        font-size: 18px;
+      }
+      button {
+        font-size: 20px;
+        padding: 14px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h2>✨ Как вам наш сервис? ✨</h2>
+<div class="stars" id="starContainer">
+  <span data-value="1">★</span>
+  <span data-value="2">★</span>
+  <span data-value="3">★</span>
+  <span data-value="4">★</span>
+  <span data-value="5">★</span>
+</div>
+
+<div id="feedbackForm">
+  <p>📝 Что можно улучшить?</p>
+  <textarea id="feedback" rows="5" placeholder="Напишите свой отзыв..." required></textarea>
+  <button onclick="submitFeedback()">📬 Отправить отзыв</button>
+</div>
+
+<script>
+  const stars = document.querySelectorAll('.stars span');
+  const feedbackForm = document.getElementById('feedbackForm');
+  const yandexLink = "https://yandex.ru/maps/org/neva_avtokom_audi/173347482303/reviews/?add-review=true&";
+
+  let selectedRating = 0;
+
+  // 👇 ВСТАВЬТЕ ВАШ URL ОТ APPS SCRIPT
+  const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFv9SbqprPtfmmuaK389GbA0gzMvNacf-IncYTu56YexpcZt_axuH1thZFZNBWg1_M4w/exec";
+
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      selectedRating = parseInt(star.dataset.value);
+      highlightStars(selectedRating);
+
+      if (selectedRating === 5) {
+        window.location.href = yandexLink;
+      } else {
+        feedbackForm.style.display = 'block';
+        feedbackForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  function highlightStars(rating) {
+    stars.forEach(star => {
+      star.classList.toggle('selected', parseInt(star.dataset.value) <= rating);
+    });
+  }
+
+  async function submitFeedback() {
+    const feedbackText = document.getElementById('feedback').value.trim();
+    
+    if (!feedbackText) {
+      alert("✏️ Пожалуйста, напишите отзыв.");
+      return;
+    }
+
+    const btn = document.querySelector('button');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = '⏳ Отправка...';
+
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rating: selectedRating,
+          feedback: feedbackText
+        })
+      });
+      
+      alert("✅ Спасибо за отзыв!");
+      feedbackForm.style.display = 'none';
+      document.getElementById('feedback').value = '';
+      stars.forEach(star => star.classList.remove('selected'));
+      selectedRating = 0;
+      
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert("❌ Ошибка при отправке. Пожалуйста, попробуйте позже.");
+    } finally {
+      btn.disabled = false;
+      btn.innerText = originalText;
+    }
+  }
+</script>
+
+</body>
+</html>
